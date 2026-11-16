@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Token Pirata Pro - Escuadrón</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Firebase SDK para la sincronización en tiempo real entre amigos -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <style>
+        body { background-color: #0b0e14; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
+        .glass-card { background: #131822; border: 1px solid #1e293b; }
+    </style>
+</head>
+<body class="p-4 max-w-md mx-auto min-h-screen flex flex-col justify-between pb-8">
+
+    <div>
+        <!-- CABECERA -->
+        <header class="flex justify-between items-center glass-card p-3 rounded-xl mb-4 shadow-lg">
+            <div class="flex items-center space-x-2">
+                <span class="text-sky-400 font-bold text-lg">✦</span>
+                <h1 class="font-extrabold tracking-wide text-xs text-sky-400">TOKEN PIRATA</h1>
+            </div>
+            <div class="flex items-center space-x-2">
+                <span id="label-perfil" class="text-xs text-slate-400 font-medium">xdoofy92</span>
+                <button onclick="abrirAjustes()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs px-2.5 py-1.5 rounded-lg font-semibold transition">⚙️ Ajustes</button>
+            </div>
+        </header>
+
+        <!-- TARJETA GLOBAL DEL ESCUADRÓN -->
+        <div class="glass-card p-4 rounded-xl mb-4 shadow-lg border-sky-500/30 bg-gradient-to-br from-[#131822] to-[#0f172a]">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-[10px] text-sky-400 font-bold uppercase tracking-wider">🛡️ Escuadrón Global En Línea</span>
+                <span id="txt-estado-conexion" class="text-[9px] text-amber-400 bg-amber-950/40 px-2 py-0.5 rounded border border-amber-900/50">Conectando...</span>
+            </div>
+            <div class="flex justify-between items-baseline">
+                <div>
+                    <h2 id="txt-global-total" class="text-3xl font-black text-white mt-1">0</h2>
+                    <p class="text-[10px] text-slate-400">Cofres totales sumados por todos los amigos</p>
+                </div>
+                <div class="text-right">
+                    <p id="txt-global-prob" class="text-sm font-bold text-emerald-400">0.000%</p>
+                    <p class="text-[9px] text-slate-400">Probabilidad Grupal</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- TARJETA PERSONAL Y MÉTRICAS -->
+        <div class="grid grid-cols-2 gap-3 mb-4">
+            <div class="glass-card p-4 rounded-xl flex flex-col justify-between shadow-md">
+                <div>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Tus Cofres</p>
+                    <h2 id="txt-total" class="text-2xl font-black text-sky-400 mt-1">0</h2>
+                    <p id="txt-prob" class="text-xs font-bold text-emerald-400 mt-1">Tu Prob: 0.000%</p>
+                </div>
+                <div class="mt-4 pt-2 border-t border-slate-800 flex justify-between items-center">
+                    <div>
+                        <p class="text-[9px] text-slate-400">Sesión actual</p>
+                        <p id="txt-sesion" class="text-sm font-bold text-amber-400">0 cofres</p>
+                    </div>
+                    <button onclick="reiniciarSesion()" class="text-red-400 hover:text-red-300 text-[10px] bg-red-950/40 px-2 py-1 rounded border border-red-900/50">Reiniciar</button>
+                </div>
+            </div>
+
+            <div class="glass-card p-3 rounded-xl flex flex-col justify-around shadow-md">
+                <div>
+                    <p class="text-[9px] text-slate-400 font-bold">HOY (Tuyo)</p>
+                    <p id="txt-hoy" class="text-base font-bold text-emerald-400">0</p>
+                </div>
+                <div class="border-t border-slate-800 pt-1">
+                    <p class="text-[9px] text-slate-400 font-bold">MEDIA / PARTIDA</p>
+                    <p id="txt-media" class="text-base font-bold text-slate-100">0.0</p>
+                </div>
+                <div class="border-t border-slate-800 pt-1">
+                    <p class="text-[9px] text-slate-400 font-bold">PARTIDAS</p>
+                    <p id="txt-partidas" class="text-base font-bold text-sky-400">0</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- REGISTRO RÁPIDO -->
+        <div class="glass-card p-4 rounded-xl mb-4 shadow-md">
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-3">Registro Rápido de Cofres</p>
+            <div class="grid grid-cols-4 gap-2 mb-3">
+                <button onclick="sumar(1)" class="bg-emerald-700 hover:bg-emerald-600 active:scale-95 transition text-white font-bold py-2.5 rounded-xl text-sm shadow">+1</button>
+                <button onclick="sumar(3)" class="bg-sky-700 hover:bg-sky-600 active:scale-95 transition text-white font-bold py-2.5 rounded-xl text-sm shadow">+3</button>
+                <button onclick="sumar(5)" class="bg-purple-700 hover:bg-purple-600 active:scale-95 transition text-white font-bold py-2.5 rounded-xl text-sm shadow">+5</button>
+                <button onclick="sumar(1)" class="bg-amber-600 hover:bg-amber-500 active:scale-95 transition text-white font-bold py-2.5 rounded-xl text-xs shadow">★ Fruta</button>
+            </div>
+            <button onclick="terminarPartida()" class="w-full bg-emerald-600 hover:bg-emerald-500 active:scale-95 transition text-white font-bold py-3 rounded-xl text-xs uppercase tracking-wider shadow-lg">
+                🏁 Terminar Partida y Guardar en el Grupo
+            </button>
+        </div>
+
+        <!-- MAPA DE RUTA TÁCTICO -->
+        <div class="glass-card p-4 rounded-xl shadow-md">
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-3">Mapa de Ruta Táctico</p>
+            <div class="flex gap-2">
+                <label class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-2.5 px-3 rounded-xl text-center cursor-pointer transition shadow">
+                    📁 Cargar Imagen
+                    <input type="file" accept="image/*" onchange="cargarMapa(event)" class="hidden">
+                </label>
+                <button onclick="verMapa()" class="flex-1 bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold py-2.5 rounded-xl transition shadow">
+                    👁️ Ver Mapa Flotante
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE AJUSTES -->
+    <div id="modal-ajustes" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="glass-card w-full max-w-sm p-5 rounded-2xl border border-slate-700 shadow-2xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-sm font-bold text-sky-400 uppercase">Ajustes y Escuadrón</h3>
+                <button onclick="cerrarAjustes()" class="text-slate-400 hover:text-white font-bold">✕</button>
+            </div>
+            <div class="space-y-3 mb-5">
+                <div>
+                    <label class="text-[10px] text-slate-400 font-bold">Tu Nombre de Perfil</label>
+                    <input id="input-perfil" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white mt-1">
+                </div>
+                <div>
+                    <label class="text-[10px] text-slate-400 font-bold">Código de Sala / Escuadrón (¡Debe ser el mismo con tus amigos!)</label>
+                    <input id="input-sala" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white mt-1">
+                </div>
+                <div>
+                    <label class="text-[10px] text-slate-400 font-bold">Tus Cofres Totales (Anteriores)</label>
+                    <input id="input-normales" type="number" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white mt-1">
+                </div>
+                <div>
+                    <label class="text-[10px] text-slate-400 font-bold">Tus Partidas Jugadas</label>
+                    <input id="input-partidas" type="number" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white mt-1">
+                </div>
+            </div>
+            <button onclick="guardarAjustes()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider transition shadow">
+                Guardar y Conectar
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL DE MAPA CON PANEL FLOTANTE (NO SE CIERRA AL SUMAR) -->
+    <div id="modal-mapa" class="fixed inset-0 bg-black hidden flex flex-col items-center justify-center z-50">
+        <div class="w-full h-full flex items-center justify-center relative overflow-hidden">
+            <img id="img-mapa-visor" class="w-full h-full object-contain">
+        </div>
+
+        <!-- PANEL FLOTANTE SOBRE EL MAPA -->
+        <div class="absolute bottom-4 left-4 right-4 bg-slate-950/90 backdrop-blur-md border border-slate-700 p-3 rounded-2xl shadow-2xl flex flex-col gap-2">
+            <div class="flex justify-between items-center px-1">
+                <span class="text-[10px] font-bold text-amber-400">SESIÓN FLOTANTE: <span id="txt-sesion-flotante" class="text-white">0</span> cofres</span>
+                <button onclick="cerrarMapa()" class="bg-red-600 hover:bg-red-500 text-white text-[10px] font-bold px-3 py-1 rounded-lg uppercase shadow">✕ Cerrar Mapa</button>
+            </div>
+            <div class="grid grid-cols-4 gap-2">
+                <button onclick="sumar(1)" class="bg-emerald-700 hover:bg-emerald-600 active:scale-95 text-white font-bold py-2 rounded-xl text-xs shadow">+1</button>
+                <button onclick="sumar(3)" class="bg-sky-700 hover:bg-sky-600 active:scale-95 text-white font-bold py-2 rounded-xl text-xs shadow">+3</button>
+                <button onclick="sumar(5)" class="bg-purple-700 hover:bg-purple-600 active:scale-95 text-white font-bold py-2 rounded-xl text-xs shadow">+5</button>
+                <button onclick="terminarPartida()" class="bg-amber-600 hover:bg-amber-500 active:scale-95 text-white font-bold py-2 rounded-xl text-[10px] shadow">🏁 Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuración de Firebase para base de datos en tiempo real gratuita
+        const firebaseConfig = {
+            databaseURL: "https://token-pirata-fortnite-default-rtdb.firebaseio.com/"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        const PROB_UNITARIA = 1 / 137500;
+        let datos = JSON.parse(localStorage.getItem("token_pirata_web")) || {
+            perfil: "xdoofy92",
+            sala: "escuadron-principal",
+            normales: 0,
+            partidas: 0,
+            historial_diario: {},
+            imagen_mapa: ""
+        };
+        if(!datos.sala) datos.sala = "escuadron-principal";
+        let sesionActual = 0;
+        let dbRef = null;
+
+        function conectarFirebase() {
+            if (dbRef) dbRef.off(); // Desconectar anterior si cambia de sala
+            let salaLimpia = datos.sala.toLowerCase().replace(/[^a-z0-9]/g, "_");
+            dbRef = db.ref("salas/" + salaLimpia + "/" + datos.perfil);
+            
+            document.getElementById("txt-estado-conexion").innerText = "Conectado (" + datos.sala + ")";
+            document.getElementById("txt-estado-conexion").className = "text-[9px] text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-900/50";
+
+            // Escuchar a todo el escuadrón en tiempo real
+            db.ref("salas/" + salaLimpia).on("value", (snapshot) => {
+                let escuadronData = snapshot.val() || {};
+                let totalGlobal = 0;
+                
+                Object.values(escuadronData).forEach(miembro => {
+                    totalGlobal += (miembro.normales || 0);
+                });
+
+                document.getElementById("txt-global-total").innerText = totalGlobal.toLocaleString();
+                let probGlobal = (1 - Math.pow(1 - PROB_UNITARIA, totalGlobal)) * 100;
+                document.getElementById("txt-global-prob").innerText = probGlobal.toFixed(3) + "%";
+            });
+
+            sincronizarMisDatos();
+        }
+
+        function sincronizarMisDatos() {
+            if (!dbRef) return;
+            dbRef.set({
+                normales: datos.normales,
+                partidas: datos.partidas,
+                actualizado: Date.now()
+            });
+        }
+
+        function actualizarUI() {
+            let totalGuardado = datos.normales;
+            let totalConSesion = totalGuardado + sesionActual;
+            let prob = (1 - Math.pow(1 - PROB_UNITARIA, totalConSesion)) * 100;
+
+            document.getElementById("txt-total").innerText = totalGuardado.toLocaleString();
+            document.getElementById("txt-prob").innerText = `Tu Prob: ${prob.toFixed(3)}%`;
+            document.getElementById("txt-sesion").innerText = `${sesionActual} cofres`;
+            document.getElementById("txt-sesion-flotante").innerText = sesionActual;
+            document.getElementById("label-perfil").innerText = datos.perfil;
+
+            let hoyStr = new Date().toISOString().split('T')[0];
+            let cofresHoy = (datos.historial_diario[hoyStr] || 0) + sesionActual;
+            document.getElementById("txt-hoy").innerText = cofresHoy;
+
+            let media = datos.partidas > 0 ? (totalGuardado / datos.partidas).toFixed(1) : "0.0";
+            document.getElementById("txt-media").innerText = media;
+            document.getElementById("txt-partidas").innerText = datos.partidas;
+
+            localStorage.setItem("token_pirata_web", JSON.stringify(datos));
+        }
+
+        function sumar(cant) {
+            sesionActual += cant;
+            actualizarUI();
+        }
+
+        function reiniciarSesion() {
+            if (confirm("¿Seguro que deseas reiniciar la sesión actual sin guardar?")) {
+                sesionActual = 0;
+                actualizarUI();
+            }
+        }
+
+        function terminarPartida() {
+            if (sesionActual <= 0) {
+                alert("No has registrado cofres en esta sesión.");
+                return;
+            }
+            datos.normales += sesionActual;
+            datos.partidas += 1;
+
+            let hoyStr = new Date().toISOString().split('T')[0];
+            datos.historial_diario[hoyStr] = (datos.historial_diario[hoyStr] || 0) + sesionActual;
+
+            let sumados = sesionActual;
+            sesionActual = 0;
+            
+            sincronizarMisDatos();
+            actualizarUI();
+            alert(`¡Partida guardada! Se sumaron ${sumados} cofres a tu cuenta y al escuadrón.`);
+        }
+
+        function abrirAjustes() {
+            document.getElementById("input-perfil").value = datos.perfil;
+            document.getElementById("input-sala").value = datos.sala;
+            document.getElementById("input-normales").value = datos.normales;
+            document.getElementById("input-partidas").value = datos.partidas;
+            document.getElementById("modal-ajustes").classList.remove("hidden");
+        }
+
+        function cerrarAjustes() {
+            document.getElementById("modal-ajustes").classList.add("hidden");
+        }
+
+        function guardarAjustes() {
+            datos.perfil = document.getElementById("input-perfil").value.trim() || "xdoofy92";
+            datos.sala = document.getElementById("input-sala").value.trim() || "escuadron-principal";
+            datos.normales = parseInt(document.getElementById("input-normales").value) || 0;
+            datos.partidas = parseInt(document.getElementById("input-partidas").value) || 0;
+            
+            cerrarAjustes();
+            conectarFirebase();
+            actualizarUI();
+        }
+
+        function cargarMapa(event) {
+            const archivo = event.target.files && event.target.files[0];
+            if (!archivo) return;
+
+            if (!archivo.type.startsWith("image/")) {
+                alert("Selecciona un archivo de imagen válido.");
+                event.target.value = "";
+                return;
+            }
+
+            const lector = new FileReader();
+            lector.onload = () => {
+                datos.imagen_mapa = lector.result;
+                localStorage.setItem("token_pirata_web", JSON.stringify(datos));
+                document.getElementById("img-mapa-visor").src = datos.imagen_mapa;
+                alert("Mapa cargado correctamente.");
+            };
+            lector.onerror = () => alert("No se pudo cargar la imagen.");
+            lector.readAsDataURL(archivo);
+        }
+
+        function verMapa() {
+            if (!datos.imagen_mapa) {
+                alert("Primero carga una imagen del mapa.");
+                return;
+            }
+            document.getElementById("img-mapa-visor").src = datos.imagen_mapa;
+            document.getElementById("modal-mapa").classList.remove("hidden");
+            actualizarUI();
+        }
+
+        function cerrarMapa() {
+            document.getElementById("modal-mapa").classList.add("hidden");
+        }
+
+        // Inicializar la interfaz y la sincronización al abrir la página.
+        actualizarUI();
+        conectarFirebase();
+    </script>
+</body>
+</html>
